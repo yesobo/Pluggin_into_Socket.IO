@@ -1,0 +1,20 @@
+{
+  "name": "Pluggin_into_Socket.IO",
+  "version": "0.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "socket.io": "~0.9.13",
+    "express": "3.x"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yesobo/Pluggin_into_Socket.IO.git"
+  },
+  "license": "BSD",
+  "description": "_ref:_ http://www.joezimjs.com/javascript/plugging-into-socket-io-the-basics/"
+}

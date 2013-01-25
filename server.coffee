@@ -1,7 +1,8 @@
 io = require 'socket.io'
 express = require 'express'
 
-LISTENING_PORT = process.env.PORT
+LISTENING_PORT = 8010
+HOST = "http://localhost"
 
 # Via express 3.x server
 app = express()
@@ -27,17 +28,7 @@ io = io.listen LISTENING_PORT
 ###
 
 # Now, let's set up and start listening for events
-io.sockets.on 'connection', (sockets) ->
-    console.log 'user connected to server'
-    socket.on 'some event', (data) ->
-        # We've received some data. Let's just log it
+io.sockets.on 'connection', (socket) ->
+    socket.emit 'news', { hello: 'world' }
+    socket.on 'my other event', (data) ->
         console.log data
-        
-        # Now let's reply
-        socket.emit 'event', {some: 'data'}
-        
-        # Informs every client
-        io.sockets.emit 'chat message', data
-
-console.log "socket.io listening at #{process.env.IP}:#{process.env.PORT}"
-        
