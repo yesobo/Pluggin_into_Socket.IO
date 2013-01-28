@@ -38,11 +38,31 @@
 
 
   io.sockets.on('connection', function(socket) {
-    socket.emit('news', {
-      hello: 'world'
+    console.log('a user is connected to server');
+    socket.send('connection received by the server');
+    socket.on('message', function(message) {
+      console.log(message);
+      return socket.emit('news', {
+        hello: 'world'
+      });
     });
-    return socket.on('my other event', function(data) {
+    socket.on('my other event', function(data) {
       return console.log(data);
+    });
+    socket.on('execute_console', function(func) {
+      return func();
+    });
+    socket.on('sendName', function(name) {
+      console.log("storing userName, " + name);
+      return socket.set('userName', name, function() {
+        return socket.emit('nameReceived');
+      });
+    });
+    return socket.on('getName', function() {
+      return socket.get('userName', function(err, ctxName) {
+        console.log("emitting getname, " + ctxName);
+        return socket.emit('getName', ctxName);
+      });
     });
   });
 

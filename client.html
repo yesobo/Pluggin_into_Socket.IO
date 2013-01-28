@@ -3,18 +3,128 @@
 <head>
     <meta charset="UTF-8">
 	<title>Plugging into socket.io</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js">
+    </script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js">
+    </script>
+    <script>
+    var socketConnector = function() {
+        var SOCKET_URL = "http://localhost:8010/";
+        var socket;
+        var socketHandlers = function() {
+            var news = function (data) {
+                document.getElementById("socketLog").innerText = "'news message received from server!";
+                socket.emit('my other event', { my: 'data' });
+            };
+            var disconnect = function() {
+                document.getElementById("socketLog").innerText = "You are disconnected from our server";
+            };
+            var message = function(message) {
+                console.log("connection accepted by server");
+                console.log("sending message from client");
+                socket.send('')
+            };
+            var nameReceived = function() {
+                console.log("Named has been received by the server");
+            }
+            var getName = function(name) {
+                 console.log("name received from server")
+                 $('#myName').val(name);
+            }
+            return {
+                news: news,
+                disconnect: disconnect,
+                message: message,
+                nameReceived: nameReceived
+            }
+        } ();
+        var init =  function() {
+            console.log('iniciando cliente...');
+            socket = io.connect(socketConnector.SOCKET_URL);
+
+            // setting socket_handlers
+            
+            for (var handlerName in socketHandlers) {
+                var func = socketHandlers[handlerName];
+                socket.on(handlerName.toString(), func);
+            }
+
+            $('#btnMyName').unbind('click').click(sendMyName);
+        };
+
+        var nameSpaceConnector = function(namespace) {
+            
+            var connection = io.connect(socketConnector.SOCKET_URL + namespace);
+            var addHandler = function(event, handler) {
+                connection.on(event, handler);
+            };
+
+            return {
+                addHandler: addHandler
+            }
+        };
+
+        var initChatNameSpace = function() {
+            var chat = nameSpaceConnector('chat');
+            chat.addHandler('connect', function() {
+                chat.emit('connectedToChat');
+            });
+        };
+        
+        var disconnect = function() {
+            console.log("disconnecting...");
+            socket.disconnect();
+        };
+
+        var emit = function(name, data) {
+            socket.emit(name, data);
+        }
+
+        return {
+            SOCKET_URL: SOCKET_URL,
+            socketHandlers: socketHandlers,
+            init: init,
+            disconnect: disconnect,
+            emit: emit
+        }
+    } ();
+
+    $(document).ready(function() {
+       socketConnector.init();
+    });
+
+    function sendFunction() {
+        socketConnector.emit( "execute_console", function() {
+            console.log("This code is called by server");
+        });
+    }
+
+    function retrieveMyName() {
+        socketConnector.emit("getName"); 
+        $('#btnMyName').html("Send my name");
+        $('#btnMyName').unbind('click').click(sendMyName);
+    }
+
+    function sendMyName() {
+        socketConnector.emit( "sendName", $('#myName').val());
+        $('#myName').val("");
+        $('#btnMyName').html("Get my name");
+        $('#btnMyName').unbind('click').click(retrieveMyName);
+    }
+
+
+</script>
 </head>
 <body>
 	Hello Client!
-<script>
-    var SOCKET_URL = "http://localhost:8010/"
-    var socket = io.connect(SOCKET_URL);
-    
-    socket.on('news', function (data) {
-        console.log(data);
-        socket.emit('my other event', { my: 'data' });
-    });
-</script>
+    <div id="logList">
+        <p id="socketLog"></p>
+    </div>
+    <button onclick="socketConnector.disconnect();">disconnect</button>
+    <button onclick="sendFunction();">send function</button>
+    <div>
+        <input type="text" name="myName" id="myName">
+        <button id="btnMyName" onclick="">Send my name</button>
+    </div>
 </body>
 </html>
